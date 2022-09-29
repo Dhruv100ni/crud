@@ -1,28 +1,35 @@
-import 'package:crud/HomePage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
-// _ is used to make the class private For eg: _LoginPageState
 class _LoginPageState extends State<LoginPage> {
-  String name = "";
+  String uname = "";
   String pass = "";
   String error = "";
   bool changeButton = false;
   final _formKey = GlobalKey<FormState>();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   handleLogin(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
       // Google auth
       try {
         final credential = await FirebaseAuth.instance
-            .signInWithEmailAndPassword(email: name, password: pass);
+            .signInWithEmailAndPassword(email: uname, password: pass);
+        setState(() {
+          changeButton = !changeButton;
+        });
+        // await Future.delayed(const Duration(seconds: 1));
+        // ignore: use_build_context_synchronously
         await Navigator.pushNamed(context, "/home");
+        setState(() {
+          changeButton = !changeButton;
+        });
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
           setState(() {
@@ -42,93 +49,91 @@ class _LoginPageState extends State<LoginPage> {
     return Material(
       color: Colors.white,
       child: SingleChildScrollView(
-        child: Column(
-          children: [
-            Image.asset(
-              "assets/images/login_image.png",
-              fit: BoxFit.cover,
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Text(
-              "Welcome $name",
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              Image.asset(
+                "assets/images/login.png",
+                fit: BoxFit.cover,
               ),
-            ),
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 32.0),
-              child: Column(
-                children: [
-                  TextFormField(
-                    //TextFormField is used to create a text field
-                    decoration: InputDecoration(
-                      hintText: "Enter Username",
-                      labelText: "Username",
+              // Instead of Padding, can even insert code in it
+              // Can also use padding in the below text
+              const SizedBox(
+                height: 20,
+              ),
+              Text(
+                "Welcome! $uname",
+                style:
+                    const TextStyle(fontSize: 28, fontWeight: FontWeight.w600),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(3.0),
+                child: Text(
+                  "$error",
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.red),
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 16.0, horizontal: 32.0),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      onChanged: (value) {
+                        setState(() {
+                          uname = value;
+                        });
+                      },
+                      decoration: const InputDecoration(
+                          hintText: "Username", labelText: "Enter Username"),
                     ),
-                    onChanged: (value) => setState(() {
-                      name = value;
-                    }),
-                  ),
-                  TextFormField(
-                    obscureText: true, //to hide the password
-                    decoration: InputDecoration(
-                      hintText: "Enter Password",
-                      labelText: "Password",
-                    ),
-                    onChanged: (value) => setState(() {
-                      pass = value;
-                    }),
-                  ),
-                  SizedBox(
-                    height: 40.0,
-                  ),
-                  // ElevatedButton(
-                  //   child: Text("Login"),
-                  //   style: TextButton.styleFrom(
-                  //     minimumSize: Size(150, 40),
-                  //   ),
-                  //   onPressed: () {
-                  //     handleLogin(context);
-                  //   },
-                  // ),
+                    TextFormField(
+                      obscureText: true,
+                      decoration: const InputDecoration(
+                          hintText: "Password", labelText: "Enter Password"),
+                      onChanged: (value) => setState(() {
+                        pass = value;
+                      }),
+                    )
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
 
-                  Material(
-                    color: Colors.deepPurple,
-                    borderRadius: BorderRadius.circular(changeButton ? 50 : 8),
-                    child: InkWell(
-                      onTap: () => handleLogin(context),
-                      child: AnimatedContainer(
-                        duration: Duration(seconds: 1),
-                        width: changeButton ? 50 : 150,
-                        height: 50,
-                        alignment: Alignment.center,
-                        child: changeButton
-                            ? Icon(
-                                Icons.done,
-                                color: Colors.green,
-                              )
-                            : Text(
-                                "Login",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                      ),
-                    ),
+              Material(
+                color: Colors.indigoAccent,
+                child: InkWell(
+                  onTap: () => handleLogin(context),
+                  child: AnimatedContainer(
+                    duration: const Duration(seconds: 1),
+                    height: 50,
+                    width: changeButton ? 50 : 150,
+                    alignment: Alignment.center,
+                    child: changeButton
+                        ? const Icon(
+                            Icons.done,
+                            color: Colors.white,
+                          )
+                        : const Text(
+                            "Login",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
+                          ),
                   ),
-                  SizedBox(
-                    height: 20.0,
-                  ),
-                ],
-              ),
-            ),
-          ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );
